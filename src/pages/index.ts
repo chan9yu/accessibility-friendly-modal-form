@@ -1,0 +1,1 @@
+export { ModalFormPage } from "./ModalFormPage";
