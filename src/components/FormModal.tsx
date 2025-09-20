@@ -1,5 +1,12 @@
+import { useState, type FormEvent } from "react";
+
 import type { FormData } from "../hooks";
+import { validateForm } from "../utils";
 import { Modal } from "./Modal";
+
+type ErrorType = {
+  [key: string]: string;
+};
 
 type FormModalProps = {
   isOpen: boolean;
@@ -8,10 +15,12 @@ type FormModalProps = {
 };
 
 export function FormModal({ isOpen, onSubmit, onCancel }: FormModalProps) {
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  const [errors, setErrors] = useState<ErrorType>({});
 
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
     const data = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
@@ -19,6 +28,14 @@ export function FormModal({ isOpen, onSubmit, onCancel }: FormModalProps) {
       github: (formData.get("github") as string) || undefined,
     };
 
+    const newErrors: ErrorType = validateForm(data);
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
     onSubmit(data);
   };
 
@@ -39,8 +56,17 @@ export function FormModal({ isOpen, onSubmit, onCancel }: FormModalProps) {
             name="name"
             type="text"
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-invalid={errors.name ? "true" : "false"}
+            aria-describedby={errors.name ? "name-error" : undefined}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              errors.name ? "border-red-500" : "border-gray-300"
+            }`}
           />
+          {errors.name && (
+            <p id="name-error" role="alert" aria-live="polite" className="text-red-600 text-sm mt-1">
+              {errors.name}
+            </p>
+          )}
         </div>
 
         <div>
@@ -52,8 +78,17 @@ export function FormModal({ isOpen, onSubmit, onCancel }: FormModalProps) {
             name="email"
             type="email"
             required
-            className="w-full px-3 py-2 border border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-invalid={errors.email ? "true" : "false"}
+            aria-describedby={errors.email ? "email-error" : undefined}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              errors.email ? "border-red-500" : "border-blue-500"
+            }`}
           />
+          {errors.email && (
+            <p id="email-error" role="alert" aria-live="polite" className="text-red-600 text-sm mt-1">
+              {errors.email}
+            </p>
+          )}
         </div>
 
         <div>
@@ -64,13 +99,22 @@ export function FormModal({ isOpen, onSubmit, onCancel }: FormModalProps) {
             id="experience"
             name="experience"
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-invalid={errors.experience ? "true" : "false"}
+            aria-describedby={errors.experience ? "experience-error" : undefined}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              errors.experience ? "border-red-500" : "border-gray-300"
+            }`}
           >
             <option value="">선택해주세요</option>
             <option value="0">0-3년</option>
             <option value="1">4-7년</option>
             <option value="2">8년 이상</option>
           </select>
+          {errors.experience && (
+            <p id="experience-error" role="alert" aria-live="polite" className="text-red-600 text-sm mt-1">
+              {errors.experience}
+            </p>
+          )}
         </div>
 
         <div>
